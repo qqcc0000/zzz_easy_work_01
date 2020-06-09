@@ -156,6 +156,28 @@ function camera_logs() {
   adb shell "echo logPerfInfoMask= 0x02000002>> /vendor/etc/camera/camxoverridesettings.txt"
   adb shell "cat /vendor/etc/camera/camxoverridesettings.txt"
 
+  echo ""
+  echo "please reboot"
+}
+
+# ============================================================================
+function camera_dump_yuv_bps() {
+  echo "============================"
+  echo "camera dump yuv bps"
+  echo "============================"
+  adb shell mkdir vendor/etc/camera
+  adb shell "echo autoImageDump=TRUE >> /vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "echo dumpInputatOutput=TRUE >> /vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "echo autoImageDumpMask=0x4 >> /vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "echo offlineImageDumpOnly=TRUE >> /vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "echo forceDisableUBWCOnIfeIpeLink=TRUE >> vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "echo outputFormat=YUV420NV12TP10 >> vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "echo refoutputFormatType=YUV420NV12TP10 >> vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "cat /vendor/etc/camera/camxoverridesettings.txt"
+
+  echo -e "need modify usecase xml like \"sdm845_usecase.xml\", dump file name like \n\"p[InternalZSLYuv2Jpeg]_req[1]_batch[0]_IPE[5]_port[0]_w[4608]_h[3456]_20200513_203855.YUV420NV12\""
+  echo "modify the format \"ChiFormatUBWCTP10\" to \"ChiFormatYUV420NV12TP10\" of the usecase like \"QuadCFASnapshotYuv\" in sdm845_usecase.xml"
+  echo "please reboot"
 }
 
 echo -e "\033[32m
@@ -204,6 +226,9 @@ case $level1 in
     ;;
   cl)
     camera_logs
+    ;;
+  cdyb)
+    camera_dump_yuv_bps
     ;;
   si)
     script_info
