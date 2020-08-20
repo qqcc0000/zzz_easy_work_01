@@ -116,15 +116,15 @@ function camera_raw() {
   adb shell "echo reprocessDump=TRUE >> /vendor/etc/camera/camxoverridesettings.txt"
   adb shell "echo autoImageDump=TRUE >> /vendor/etc/camera/camxoverridesettings.txt"
   adb shell "echo autoImageDumpMask=0x07 >> /vendor/etc/camera/camxoverridesettings.txt"
-  adb shell "echo logVerboseMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
-  adb shell "echo logInfoMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
-  adb shell "echo overrideLogLevels=31 >> /vendor/etc/camera/camxoverridesettings.txt"
-  adb shell "echo logVerboseMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
-  adb shell "echo logInfoMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
-  adb shell "echo overrideLogLevels=31 >> /vendor/etc/camera/camxoverridesettings.txt"
-  adb shell "echo logVerboseMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
-  adb shell "echo logInfoMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
-  adb shell "echo overrideLogLevels=31 >> /vendor/etc/camera/camxoverridesettings.txt"
+#  adb shell "echo logVerboseMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
+#  adb shell "echo logInfoMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
+#  adb shell "echo overrideLogLevels=31 >> /vendor/etc/camera/camxoverridesettings.txt"
+#  adb shell "echo logVerboseMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
+#  adb shell "echo logInfoMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
+#  adb shell "echo overrideLogLevels=31 >> /vendor/etc/camera/camxoverridesettings.txt"
+#  adb shell "echo logVerboseMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
+#  adb shell "echo logInfoMask=0x50082 >> /vendor/etc/camera/camxoverridesettings.txt"
+#  adb shell "echo overrideLogLevels=31 >> /vendor/etc/camera/camxoverridesettings.txt"
 
   echo ""
   echo "please reboot"
@@ -144,6 +144,19 @@ function script_info() {
 
 
 # ============================================================================
+function camera_aec_logs() {
+  echo "============================"
+  echo "camera aec logs"
+  echo "============================"
+  adb shell mkdir vendor/etc/camera
+  adb shell "echo logVerboseMask=0x2000202 >> /vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "echo logInfoMask=0x2000202 >> /vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "cat /vendor/etc/camera/camxoverridesettings.txt"
+
+  echo ""
+  echo "please reboot"
+}
+# ============================================================================
 function camera_logs() {
   echo "============================"
   echo "camera logs"
@@ -160,6 +173,18 @@ function camera_logs() {
   echo "please reboot"
 }
 
+# ============================================================================
+function camera_dump_yuv_ipe() {
+  echo "============================"
+  echo "camera dump yuv ipe"
+  echo "============================"
+  adb shell mkdir vendor/etc/camera
+  adb shell "echo autoImageDump=TRUE >> /vendor/etc/camera/camxoverridesettings.txt"
+  adb shell "echo autoImageDumpMask=0x2 >> /vendor/etc/camera/camxoverridesettings.txt" #// 0x2 for IPE node output
+  adb shell "cat /vendor/etc/camera/camxoverridesettings.txt"
+
+  echo "please reboot"
+}
 # ============================================================================
 function camera_dump_yuv_bps() {
   echo "============================"
@@ -179,6 +204,33 @@ function camera_dump_yuv_bps() {
   echo "modify the format \"ChiFormatUBWCTP10\" to \"ChiFormatYUV420NV12TP10\" of the usecase like \"QuadCFASnapshotYuv\" in sdm845_usecase.xml"
   echo "please reboot"
 }
+# ============================================================================
+function camera_enable_remosaic_s5k3p9_dump_raw() {
+  echo "============================"
+  echo "camera aec logs"
+  echo "============================"
+  adb shell "setprop vendor.remosaic.debug.dump 15"
+  adb shell "ls -l /data/vendor/camera"
+  echo ""
+  echo "camera_enable_remosaic_s5k3p9_dump_raw"
+}
+# ============================================================================
+function fastboot_unlock() {
+  echo "============================"
+  echo "camera aec logs"
+  echo "============================"
+  #for normal
+  fastboot flashing unlock
+  fastboot oem unlock
+
+  #for leia
+  fff=`fastboot devices | grep -v List | cut -f 1`
+  echo fastboot devices:$fff
+  fastboot oem leia-unlock $fff
+
+  echo ""
+  echo "fastboot_unlock, if want lock, use < fastboot flashing lock >"
+}
 
 echo -e "\033[32m
 zzz script for easy work
@@ -197,8 +249,10 @@ function usage() {
   $EEE# \"cqc\" 	- open camera QCFA enable $OOO
   $EEE# \"cr\" 		- open camera raw dump $OOO
   $EEE# \"cl\" 		- open camera logs $OOO
+  $EEE# \"r3\" 		- camera_enable_remosaic_s5k3p9_dump_raw $OOO
   $EEE# \"si\"   	- open script info $OOO
   $EEE# \"root\" 	- root$OOO
+  $EEE# \"ful\" 	- fastboot unlock$OOO
   $EEE# $OOO
   $EEE===============================================================$OOO
   sleep 1
@@ -227,6 +281,15 @@ case $level1 in
   cl)
     camera_logs
     ;;
+  r3)
+    camera_enable_remosaic_s5k3p9_dump_raw
+    ;;
+  caecl)
+    camera_aec_logs
+    ;;
+  cdyi)
+    camera_dump_yuv_ipe
+    ;;
   cdyb)
     camera_dump_yuv_bps
     ;;
@@ -235,6 +298,9 @@ case $level1 in
     ;;
   root)
     root
+    ;;
+  ful)
+    fastboot_unlock
     ;;
   *)
     usage
